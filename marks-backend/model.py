@@ -31,3 +31,20 @@ class Mark(db.Model):
 
     teacher_id = db.Column(db.Integer, db.ForeignKey('teachers.id'), nullable=False)
     student_id = db.Column(db.Integer, db.ForeignKey('students.id'), nullable=False)
+
+    def __repr__(self):
+        return f"<Subject : {self.subject}>"
+    
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
+    def update(self, subject, score):
+        self.subject = subject
+        self.score = score
+
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
