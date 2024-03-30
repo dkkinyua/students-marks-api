@@ -1,6 +1,6 @@
 from flask import request, jsonify, Flask
 from flask_restx import Api, Resource, fields
-from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token
+from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import DevelopmentConfig
@@ -11,6 +11,7 @@ app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 api = Api(app, doc="/docs")
 db.init_app(app)
+JWTManager(app)
 migrate = Migrate(app, db)
 
 # Models {Serialized}
@@ -21,6 +22,14 @@ student_model = api.model(
         "name": fields.String(),
         "email": fields.String(),
         "password": fields.String()
+    }
+)
+
+login_model = api.model(
+    "Login", 
+    {
+        "name": fields.Integer(),
+        "password": fields.Integer()
     }
 )
 
@@ -57,12 +66,14 @@ class HelloResource(Resource):
 @api.route("/marks")
 class MarksResource(Resource):
     @api.marshal_list_with(marks_model)
+    @jwt_required()
     def get(self):
         marks = Mark.query.all()
         return marks
     
     @api.expect(marks_model)
     @api.marshal_with(marks_model)
+    @jwt_required()
     def post(self):
         data = request.get_json()
         new_marks = Mark(
@@ -78,11 +89,13 @@ class MarksResource(Resource):
 @api.route("/mark/<int:id>")
 class MarkResource(Resource):
     @api.marshal_with(marks_model)
+    @jwt_required()
     def get(self, id):
         marks = Mark.query.get_or_404(id)
         return marks
     
     @api.marshal_with(marks_model)
+    @jwt_required()
     def put(self, id):
         data = request.get_json()
         update_marks = Mark.query.get_or_404(id)
@@ -93,6 +106,7 @@ class MarkResource(Resource):
 
         return update_marks
     
+    @jwt_required()
     def delete(self, id):
         delete_marks = Mark.query.get_or_404(id)
         delete_marks.delete()
@@ -131,7 +145,7 @@ class SignupResource(Resource):
 # Login Route
 @api.route("/login", methods=["POST"])
 class LoginResource(Resource):
-    @api.expect(student_model)
+    @api.expect(login_model)
     def post(self):
         data = request.get_json()
         name = data.get("name")
@@ -143,7 +157,7 @@ class LoginResource(Resource):
             refresh_token = create_refresh_token(identity=db_student.name)
 
             return jsonify({
-                "message": f"Successfully logged in {db_student.name}",
+                "message": f"Successfully logged in as {db_student.name}",
                 "access_token": access_token,
                 "refresh_token": refresh_token
             }) 
