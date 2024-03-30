@@ -72,7 +72,34 @@ class MarksResource(Resource):
         new_marks.save()
         return new_marks
 
+# A route to get marks by id
+@api.route("/mark/<int:id>")
+class MarkResource(Resource):
+    @api.marshal_with(marks_model)
+    def get(self, id):
+        marks = Mark.query.get_or_404(id)
+        return marks
+    
+    @api.marshal_with(marks_model)
+    def put(self, id):
+        data = request.get_json()
+        update_marks = Mark.query.get_or_404(id)
+        update_marks.update(
+            subject = data.get("subject"),
+            score = data.get("score")
+        )
 
+        return update_marks
+    
+    def delete(self, id):
+        delete_marks = Mark.query.get_or_404(id)
+        delete_marks.delete()
+
+        return jsonify(
+            {
+                "message": "This subject has been deleted!"
+            }
+        )
 # Shell Configuration
 
 @app.shell_context_processor
