@@ -12,6 +12,13 @@ class Teacher(db.Model):
 
     marks = db.relationship('Mark', backref='teacher', lazy=True)
 
+    def __repr__(self):
+        return f"<Teacher: {self.name}>"
+    
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
+
 class Student(db.Model):
     __tablename__ = 'students'
 
@@ -21,6 +28,13 @@ class Student(db.Model):
     password = db.Column(db.String(50), nullable=False)
 
     marks = db.relationship('Mark', backref='student', lazy=True)
+
+    def __repr__(self):
+        return f"<Student: {self.name}>"
+    
+    def save(self):
+        db.session.add(self)
+        db.session.commit()
 
 class Mark(db.Model):
     __tablename__ = 'marks'

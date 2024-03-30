@@ -2,8 +2,10 @@ from flask import request, jsonify, Flask
 from flask_restx import Api, Resource, fields
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token
 from flask_migrate import Migrate
+from werkzeug.security import generate_password_hash, check_password_hash
 from config import DevelopmentConfig
 from model import Mark, Student, Teacher, db
+
 
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
@@ -16,7 +18,7 @@ student_model = api.model(
     "Students",
     {
         "id": fields.Integer(),
-        "username": fields.String(),
+        "name": fields.String(),
         "email": fields.String(),
         "password": fields.String()
     }
@@ -26,7 +28,7 @@ teacher_model = api.model(
     "Teachers",
     {
         "id": fields.Integer(),
-        "username": fields.String(),
+        "name": fields.String(),
         "email": fields.String(),
         "password": fields.String()
     }
@@ -100,8 +102,53 @@ class MarkResource(Resource):
                 "message": "This subject has been deleted!"
             }
         )
-# Shell Configuration
+    
+# Signup Route
+@api.route("/signup", methods=["POST"])
+class SignupResource(Resource):
+    @api.expect(student_model)
+    def post(self):
+        data = request.get_json()
+        name = data.get("name")
+        db_name = Student.query.filter_by(name=name).first()
 
+        if db_name is not None:
+            return jsonify({
+                "message": "This user exists"
+            })
+        
+        new_student = Student(
+            name = data.get("name"),
+            email = data.get("email"),
+            password = generate_password_hash(data.get("password"))
+        )
+
+        new_student.save()
+        return jsonify({
+            "message": f"User {name} has been created."
+        })
+
+# Login Route
+@api.route("/login", methods=["POST"])
+class LoginResource(Resource):
+    @api.expect(student_model)
+    def post(self):
+        data = request.get_json()
+        name = data.get("name")
+        password = data.get("password")
+        db_student = Student.query.filter_by(name=name).first()
+
+        if db_student and check_password_hash(db_student.password, password):
+            access_token = create_access_token(identity=db_student.name)
+            refresh_token = create_refresh_token(identity=db_student.name)
+
+            return jsonify({
+                "message": f"Successfully logged in {db_student.name}",
+                "access_token": access_token,
+                "refresh_token": refresh_token
+            }) 
+    
+# Shell Configuration
 @app.shell_context_processor
 def make_shell_context():
     return {
