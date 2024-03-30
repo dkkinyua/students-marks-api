@@ -1,14 +1,18 @@
 from flask import request, jsonify, Flask
 from flask_restx import Api, Resource, fields
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token
+from flask_migrate import Migrate
 from config import DevelopmentConfig
+from model import Mark, Student, Teacher, db
 
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 api = Api(app, doc="/docs")
+db.init_app(app)
+migrate = Migrate(app, db)
 
 # Models {Serialized}
-student_model = api.models(
+student_model = api.model(
     "Students",
     {
         "id": fields.Integer(),
@@ -18,7 +22,7 @@ student_model = api.models(
     }
 )
 
-teacher_model = api.models(
+teacher_model = api.model(
     "Teachers",
     {
         "id": fields.Integer(),
@@ -28,7 +32,7 @@ teacher_model = api.models(
     }
 )
 
-marks_model = api.models(
+marks_model = api.model(
     "Marks",
     {
         "id": fields.Integer(),
@@ -47,6 +51,36 @@ class HelloResource(Resource):
         }
 
         return message
+
+@api.route("/marks")
+class MarksResource(Resource):
+    @api.marshal_list_with(marks_model)
+    def get(self):
+        marks = Mark.query.all()
+        return marks
+    
+    @api.expect(marks_model)
+    @api.marshal_with(marks_model)
+    def post(self):
+        data = request.get_json()
+        new_marks = Mark(
+            subject = data.get("subject"),
+            score = data.get("score"),
+            teacher_id = data.get("teacher_id"),
+            student_id = data.get("student_id")
+        )
+        new_marks.save()
+        return new_marks
+
+
+# Shell Configuration
+
+@app.shell_context_processor
+def make_shell_context():
+    return {
+        "db": db,
+        "Marks": Mark
+    }   
 
 
 if __name__ == "__main__":
