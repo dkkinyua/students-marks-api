@@ -117,8 +117,8 @@ class MarkResource(Resource):
             }
         )
     
-# Signup Route
-@api.route("/signup", methods=["POST"])
+# Student Signup Route
+@api.route("/signup/student", methods=["POST"])
 class SignupResource(Resource):
     @api.expect(student_model)
     def post(self):
@@ -142,9 +142,34 @@ class SignupResource(Resource):
             "message": f"User {name} has been created."
         })
 
-# Login Route
-@api.route("/login", methods=["POST"])
-class LoginResource(Resource):
+# Student Signup Route
+@api.route("/signup/teacher", methods=["POST"])
+class TeacherSignupResource(Resource):
+    @api.expect(teacher_model)
+    def post(self):
+        data = request.get_json()
+        name = data.get("name")
+        db_name = Teacher.query.filter_by(name=name).first()
+
+        if db_name is not None:
+            return jsonify({
+                "message": "This user exists"
+            })
+        
+        new_teacher = Teacher(
+            name = data.get("name"),
+            email = data.get("email"),
+            password = generate_password_hash(data.get("password"))
+        )
+
+        new_teacher.save()
+        return jsonify({
+            "message": f"Teacher {name} has been created."
+        })
+    
+# Student Login Route
+@api.route("/login/student", methods=["POST"])
+class StudentLoginResource(Resource):
     @api.expect(login_model)
     def post(self):
         data = request.get_json()
@@ -153,14 +178,30 @@ class LoginResource(Resource):
         db_student = Student.query.filter_by(name=name).first()
 
         if db_student and check_password_hash(db_student.password, password):
-            access_token = create_access_token(identity=db_student.name)
-            refresh_token = create_refresh_token(identity=db_student.name)
-
             return jsonify({
-                "message": f"Successfully logged in as {db_student.name}",
-                "access_token": access_token,
-                "refresh_token": refresh_token
+                "message": f"Successfully logged in as {db_student.name}"
             }) 
+    
+@api.route("/login/teacher", methods=["POST"])
+class TeacherLoginResource(Resource):
+    @api.expect(login_model)
+    def post(self):
+        data = request.get_json()
+        name = data.get("name")
+        password = data.get("password")
+        db_teacher = Teacher.query.filter_by(name=name).first()
+
+        if db_teacher and check_password_hash(db_teacher.password, password):
+            access_token = create_access_token(identity=db_teacher.name)
+            refresh_token = create_refresh_token(identity=db_teacher.name)
+            return jsonify(
+                {
+                    "message": f"Successfully logged in as Teacher {db_teacher.name}",
+                    "access_token": access_token,
+                    "refresh_token": refresh_token
+                }
+            )
+
     
 # Shell Configuration
 @app.shell_context_processor
