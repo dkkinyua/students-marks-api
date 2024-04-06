@@ -1,5 +1,5 @@
 # A namespace for user authentication
-from flask import request
+from flask import request, jsonify, make_response
 from flask_restx import Resource, Namespace, fields
 from werkzeug.security import check_password_hash, generate_password_hash
 from model import Student, Teacher
@@ -39,3 +39,20 @@ class StudentSignupResource(Resource):
     @auth_ns.expect(student_model)
     def post(self):
         data = request.get_json()
+        name = data.get("name")
+        db_student = Student.query.filter_by(name=name).first()
+
+        if db_student is not None:
+            return jsonify({
+                "message": f"{name} exists!"
+            })
+        new_student = Student(
+            name=data.get("name"),
+            email=data.get("email"),
+            password=generate_password_hash(data.get("password"))
+        )
+
+        new_student.save()
+        return make_response(jsonify({
+            "message": f"Student {name} has been created"
+        }), 201)
