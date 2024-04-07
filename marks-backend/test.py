@@ -46,6 +46,23 @@ class APITestCase(unittest.TestCase):
 
         self.assertEqual(status_code, 201)
 
+    def test_student_login(self):
+        signup_response = self.client.post("/auth/signup/teacher", json = {
+            "name": "testuser",
+            "email": "testuser@skuli.com",
+            "password": "testuser1"
+        })
+
+        test_user = {
+            "name": "testuser",
+            "password": "testuser1"
+        }
+        login_response = self.client.post("/auth/login/student", json=test_user)
+        status_code = login_response.status_code
+
+        self.assertEqual(status_code, 200)
+
+        
     # Tear down db after tests
     def tearDown(self):
         with self.app.app_context():
