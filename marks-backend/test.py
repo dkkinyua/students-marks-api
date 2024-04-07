@@ -47,6 +47,23 @@ class APITestCase(unittest.TestCase):
         self.assertEqual(status_code, 201)
 
     def test_student_login(self):
+        signup_response = self.client.post("/auth/signup/student", json = {
+            "name": "testuser",
+            "email": "testuser@skuli.com",
+            "password": "testuser1"
+        })
+
+        test_user = {
+            "name": "testuser",
+            "password": "testuser1"
+        }
+
+        login_response = self.client.post("/auth/login/student", json=test_user)
+        status_code = login_response.status_code
+
+        self.assertEqual(status_code, 200)
+
+    def test_teacher_login(self):
         signup_response = self.client.post("/auth/signup/teacher", json = {
             "name": "testuser",
             "email": "testuser@skuli.com",
@@ -57,12 +74,20 @@ class APITestCase(unittest.TestCase):
             "name": "testuser",
             "password": "testuser1"
         }
-        login_response = self.client.post("/auth/login/student", json=test_user)
+        
+        login_response = self.client.post("/auth/login/teacher", json=test_user)
         status_code = login_response.status_code
 
         self.assertEqual(status_code, 200)
 
-        
+    # Gets all subjects and scores
+    def test_all_scores(self):
+        get_response = self.client.get("/marks/marks")
+
+        status_code = get_response.status_code
+
+        self.assertEqual(status_code, 200)
+
     # Tear down db after tests
     def tearDown(self):
         with self.app.app_context():

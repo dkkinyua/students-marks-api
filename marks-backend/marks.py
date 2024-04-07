@@ -30,7 +30,7 @@ class HelloResource(Resource):
 class MarksResource(Resource):
     @marks_ns.marshal_list_with(marks_model)
     def get(self):
-        marks = Mark.query.get()
+        marks = Mark.query.all()
 
         return marks
     
