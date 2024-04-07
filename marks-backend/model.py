@@ -1,7 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-
+from extensions import db 
 class Teacher(db.Model):
     __tablename__ = 'teachers'
 
