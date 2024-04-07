@@ -15,7 +15,9 @@ class DevelopmentConfig(Config):
     DEBUG = True
 
 class TestConfig(Config):
-    pass
+    SQLALCHEMY_DATABASE_URI = "sqlite:///test.db"
+    SQLALCHEMY_ECHO = False
+    TESTING = True
 
 class ProductionConfig(Config):
     pass
