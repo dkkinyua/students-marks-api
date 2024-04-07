@@ -42,12 +42,19 @@ class StudentSignupResource(Resource):
     def post(self):
         data = request.get_json()
         name = data.get("name")
+        email = data.get("email")
         db_student = Student.query.filter_by(name=name).first()
+        db_email = Student.query.filter_by(email=email).first()
 
         if db_student is not None:
             return jsonify({
                 "message": f"{name} exists!"
             })
+        
+        if db_email is not None:
+             return jsonify({
+                "message": f"{email} exists!"
+            })    
         
         new_student = Student(
             name=data.get("name"),
@@ -67,12 +74,20 @@ class TeacherSignupResource(Resource):
     def post(self):
         data = request.get_json()
         name = data.get("name")
+        email = data.get("email")
         db_teacher = Teacher.query.filter_by(name=name).first()
+        db_email = Teacher.query.filter_by(email=email).first()
 
         if db_teacher is not None:
             return jsonify({
                 "message": f"{name} exists!"
             })
+        
+        if db_email is not None:
+            return jsonify({
+                "message": f"{email} exists!"
+            })
+        
         
         new_teacher = Teacher(
             name=data.get("name"),
