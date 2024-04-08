@@ -1,5 +1,5 @@
 # A marks namespace
-from flask import request, jsonify
+from flask import request, jsonify, make_response
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required
 from model import Mark
@@ -46,9 +46,7 @@ class MarksResource(Resource):
         )           
     
         new_marks.save()
-        return jsonify({
-            "message": "Marks recorded."
-        })
+        return new_marks, 201
 
 # Getting, Updating and Deleting marks by id 
 @marks_ns.route("/mark/<int:id>")

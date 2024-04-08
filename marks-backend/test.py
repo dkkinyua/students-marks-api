@@ -88,6 +88,147 @@ class APITestCase(unittest.TestCase):
 
         self.assertEqual(status_code, 200)
 
+    # Get a subject by its id
+    def test_get_scores(self):
+        signup_response = self.client.post("/auth/signup/teacher", json = {
+            "name": "testuser",
+            "email": "testuser@skuli.com",
+            "password": "testuser1"
+        })
+
+        test_user = {
+            "name": "testuser",
+            "password": "testuser1"
+        }
+        
+        login_response = self.client.post("/auth/login/teacher", json=test_user)
+        status_code = login_response.status_code
+       
+        id = 1
+
+        access_token = login_response.json["access_token"]
+
+        header = {
+            "Authorization": f"Bearer {access_token}"
+        }
+
+        recipe_response = self.client.get(f"/marks/mark/{id}", headers=header)
+
+        status_code = recipe_response.status_code
+
+        self.assertEqual(status_code, 404)
+
+    # Post a subject and its score
+    def test_post_marks(self):
+        signup_response = self.client.post("/auth/signup/teacher", json = {
+            "name": "testuser",
+            "email": "testuser@skuli.com",
+            "password": "testuser1"
+        })
+
+        test_user = {
+            "name": "testuser",
+            "password": "testuser1"
+        }
+
+        test_subject = {
+            "subject": "test",
+            "score": 90,
+            "teacher_id": 1,
+            "student_id": 6
+        }
+
+        login_response = self.client.post("/auth/login/teacher", json=test_user)
+        access_token = login_response.json["access_token"]
+
+        header = {
+            "Authorization": f"Bearer {access_token}"
+        }
+        
+        marks_response = self.client.post("/marks/marks", json=test_subject, headers=header)
+        status_code = marks_response.status_code
+
+        self.assertEqual(status_code, 201)
+
+    # Updating marks
+    def test_update_marks(self):
+        signup_response = self.client.post("/auth/signup/teacher", json = {
+            "name": "testuser",
+            "email": "testuser@skuli.com",
+            "password": "testuser1"
+        })
+
+        test_user = {
+            "name": "testuser",
+            "password": "testuser1"
+        }
+
+        test_subject = {
+            "subject": "test",
+            "score": 90,
+            "teacher_id": 1,
+            "student_id": 6
+        }
+
+        login_response = self.client.post("/auth/login/teacher", json=test_user)
+        access_token = login_response.json["access_token"]
+
+        header = {
+            "Authorization": f"Bearer {access_token}"
+        }
+
+        marks_response = self.client.post("/marks/marks", json=test_subject, headers=header)
+
+        id = marks_response.json["id"]
+        
+        update_marks = {
+            "subject": "Maths",
+            "score": 92,
+        }
+
+        update_response = self.client.put(f"/marks/mark/{id}", json=update_marks, headers=header)
+        status_code = update_response.status_code
+
+        self.assertEqual(status_code, 200)
+
+    # Deleting marks
+    def test_delete_marks(self):
+        signup_response = self.client.post("/auth/signup/teacher", json = {
+            "name": "testuser",
+            "email": "testuser@skuli.com",
+            "password": "testuser1"
+        })
+
+        test_user = {
+            "name": "testuser",
+            "password": "testuser1"
+        }
+
+        test_subject = {
+            "subject": "test",
+            "score": 90,
+            "teacher_id": 1,
+            "student_id": 6
+        }
+
+        login_response = self.client.post("/auth/login/teacher", json=test_user)
+        access_token = login_response.json["access_token"]
+
+        header = {
+            "Authorization": f"Bearer {access_token}"
+        }
+
+        marks_response = self.client.post("/marks/marks", json=test_subject, headers=header)
+
+        id = marks_response.json["id"]
+       
+        delete_response = self.client.delete(f"marks/mark/{id}", headers=header)
+       
+        status_code = delete_response.status_code
+       
+        self.assertEqual(status_code, 200)
+
+
     # Tear down db after tests
     def tearDown(self):
         with self.app.app_context():
