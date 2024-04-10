@@ -228,7 +228,30 @@ class APITestCase(unittest.TestCase):
        
         self.assertEqual(status_code, 200)
 
+    def test_refresh_token(self):
+        signup_response = self.client.post("/auth/signup/teacher", json = {
+            "name": "testuser",
+            "email": "testuser@skuli.com",
+            "password": "testuser1"
+        })
 
+        test_user = {
+            "name": "testuser",
+            "password": "testuser1"
+        }
+        
+        login_response = self.client.post("/auth/login/teacher", json=test_user)
+
+        refresh_token = login_response.json["refresh_token"]
+
+        refresh_header = {
+            "Authorization": f"Bearer {refresh_token}"
+        }
+
+        refresh_response = self.client.post("/auth/refresh", headers=refresh_header)
+
+        self.assertEqual(refresh_response.status_code, 200)
+        
     # Tear down db after tests
     def tearDown(self):
         with self.app.app_context():
