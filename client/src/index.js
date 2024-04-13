@@ -1,24 +1,34 @@
-import React, {useEffect, useState} from 'react'
+import 'bootstrap/dist/css/bootstrap.min.css';
+import React from 'react'
 import ReactDOM from 'react-dom'
+import {
+    BrowserRouter as Router,
+    Routes,
+    Route
+} from 'react-router-dom'
+
+import NavBar from './components/navbar'
+import Home from './components/home';
+import Login from './components/login';
+import SignUp from './components/signup';
+import CreateMarks from './components/marks';
+
 
 const App = () => {
 
-    useEffect(() => {
-        fetch("/marks/hello")
-        .then(response => response.json())
-        .then(data => { console.log(data)
-            setMessage(data.message)
-        })
-        .then(err => console.log(err))
-    }, [])
-
-    const [message, setMessage] = useState("");
     return (
-        <div>
-            {message}
-        </div>
+        <Router>
+            <div>
+                <NavBar />
+                <Routes>
+                    <Route path='/' element={<Home/>}/>
+                    <Route path='/signup' element={<SignUp/>}/>
+                    <Route path='/login' element={<Login/>}/>
+                    <Route path='/create-marks' element={<CreateMarks/>}/>
+                </Routes>
+            </div>
+        </Router>
     )
 }
 
-const root = ReactDOM.render(<App/>, document.getElementById("root"))
-root.render(<App/>)
+ReactDOM.render(<App />, document.getElementById("root"))
