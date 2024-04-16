@@ -1,0 +1,12 @@
+.form {
+    margin: auto;
+    width: 75%;
+}
+
+.small-link {
+    color: navy;
+}
+
+.small-link:hover {
+    color: black;
+}
